@@ -47,6 +47,33 @@ Run the **interactive simulation dashboard** locally:
 
 ---
 
+# Proof-of-Utility Consensus
+
+Experimental blockchain consensus mechanism where nodes are rewarded based on **useful real-world work**.
+
+## Features
+
+- Proof-of-Utility consensus
+- Validator utility scoring
+- Weighted validator selection
+- Blockchain simulation
+- Utility-based rewards
+
+## Utility Types
+
+| Work Type | Utility Score |
+|----------|--------------|
+| compute | 5 |
+| storage | 3 |
+| ai_training | 10 |
+| data_processing | 6 |
+
+## Run Demo
+
+```bash
+python demo_network.py
+
+
 ## 🚀 Getting Started
 
 ### Prerequisites
