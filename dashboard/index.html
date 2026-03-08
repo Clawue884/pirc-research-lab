@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PiRC Research Lab Dashboard</title>
+</head>
+
+<body>
+
+<h2>PiRC Simulation Dashboard</h2>
+
+<label>Nodes</label>
+<input id="nodes" value="100000">
+
+<br>
+
+<label>Sybil Ratio</label>
+<input id="sybil" value="0.1">
+
+<br>
+
+<button onclick="runSimulation()">Run Simulation</button>
+
+<pre id="result"></pre>
+
+<script>
+
+async function runSimulation() {
+
+    let nodes = document.getElementById("nodes").value
+    let sybil = document.getElementById("sybil").value
+
+    let response = await fetch("/simulate", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            nodes: parseInt(nodes),
+            sybil_ratio: parseFloat(sybil)
+        })
+
+    })
+
+    let data = await response.json()
+
+    document.getElementById("result").innerText =
+        JSON.stringify(data, null, 2)
+}
+
+</script>
+
+</body>
+</html>
