@@ -1,55 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>PiRC Research Lab Dashboard</title>
+  <title>PiRC Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
-
 <body>
 
 <h2>PiRC Simulation Dashboard</h2>
 
-<label>Nodes</label>
-<input id="nodes" value="100000">
+<label>Nodes:</label>
+<input id="nodes" value="1000"><br>
 
-<br>
+<label>Sybil Ratio:</label>
+<input id="sybil" value="0.1"><br>
 
-<label>Sybil Ratio</label>
-<input id="sybil" value="0.1">
-
-<br>
+<label>Epochs:</label>
+<input id="epochs" value="10"><br>
 
 <button onclick="runSimulation()">Run Simulation</button>
 
-<pre id="result"></pre>
+<div id="chart"></div>
 
 <script>
-
 async function runSimulation() {
+    const nodes = document.getElementById("nodes").value;
+    const sybil = document.getElementById("sybil").value;
+    const epochs = document.getElementById("epochs").value;
 
-    let nodes = document.getElementById("nodes").value
-    let sybil = document.getElementById("sybil").value
-
-    let response = await fetch("/simulate", {
-
+    const response = await fetch("/simulate-graph", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nodes: parseInt(nodes), sybil_ratio: parseFloat(sybil), epochs: parseInt(epochs) })
+    });
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+    const data = await response.json();
 
-        body: JSON.stringify({
-            nodes: parseInt(nodes),
-            sybil_ratio: parseFloat(sybil)
-        })
+    const epochs_arr = data.map(d => d.epoch);
+    const honest_rewards = data.map(d => d.honest_avg);
+    const sybil_rewards = data.map(d => d.sybil_avg);
 
-    })
+    const trace1 = { x: epochs_arr, y: honest_rewards, mode: 'lines+markers', name: 'Honest' };
+    const trace2 = { x: epochs_arr, y: sybil_rewards, mode: 'lines+markers', name: 'Sybil' };
 
-    let data = await response.json()
+    const layout = { title: 'Average Rewards per Epoch', xaxis: { title: 'Epoch' }, yaxis: { title: 'Average Reward' } };
 
-    document.getElementById("result").innerText =
-        JSON.stringify(data, null, 2)
+    Plotly.newPlot('chart', [trace1, trace2], layout);
 }
-
 </script>
 
 </body>
