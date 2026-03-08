@@ -65,11 +65,14 @@ cd dashboard
 python app.py
 
 
-Open browser at http://127.0.0.1:5000/⁠�
-Run Tests
-Bash
-pytest --cov=.
-
+> ⚠️ Note: This dashboard runs locally. You must run:
+> 
+> ```bash
+> cd dashboard
+> python app.py
+> ```
+> 
+> Lalu buka browser di [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ⚡ Contribution
 1.Contributions are welcome!
