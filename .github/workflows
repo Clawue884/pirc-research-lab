@@ -1,6 +1,42 @@
-pi-irc-utils
- ├── src
- ├── tests
- ├── .github
- │    └── workflows
- │         └── ci.yml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest black flake8
+
+      - name: Run Linter
+        run: |
+          flake8 src
+
+      - name: Run Formatter Check
+        run: |
+          black --check src
+
+      - name: Run Tests
+        run: |
+          pytest
