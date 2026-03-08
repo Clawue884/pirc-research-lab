@@ -1,0 +1,175 @@
+import hashlib
+import json
+import random
+import time
+
+
+class Block:
+    def __init__(self, index, previous_hash, timestamp, data, validator, utility_score):
+        self.index = index
+        self.previous_hash = previous_hash
+        self.timestamp = timestamp
+        self.data = data
+        self.validator = validator
+        self.utility_score = utility_score
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        block_string = json.dumps({
+            "index": self.index,
+            "previous_hash": self.previous_hash,
+            "timestamp": self.timestamp,
+            "data": self.data,
+            "validator": self.validator,
+            "utility_score": self.utility_score
+        }, sort_keys=True).encode()
+
+        return hashlib.sha256(block_string).hexdigest()
+
+
+class Validator:
+    def __init__(self, address):
+        self.address = address
+        self.utility_score = 0
+        self.reputation = 1
+        self.blocks_validated = 0
+
+    def reward(self, utility):
+        self.utility_score += utility
+        self.reputation += utility * 0.1
+        self.blocks_validated += 1
+
+    def penalize(self):
+        self.reputation *= 0.5
+
+
+class PoUBlockchain:
+
+    def __init__(self):
+        self.chain = [self.create_genesis_block()]
+        self.validators = {}
+
+    def create_genesis_block(self):
+        return Block(
+            0,
+            "0",
+            time.time(),
+            "Genesis Block",
+            "network",
+            0
+        )
+
+    def register_validator(self, validator):
+        self.validators[validator.address] = validator
+
+    def get_latest_block(self):
+        return self.chain[-1]
+
+    def utility_table(self):
+
+        return {
+            "ai_training": 12,
+            "scientific_compute": 8,
+            "data_processing": 6,
+            "storage": 4,
+            "general_compute": 3
+        }
+
+    def calculate_utility(self, task_type):
+
+        table = self.utility_table()
+
+        if task_type not in table:
+            return 1
+
+        return table[task_type]
+
+    def verify_utility(self, utility_score):
+
+        # anti cheat simple rule
+        if utility_score > 20:
+            return False
+
+        return True
+
+    def choose_validator(self):
+
+        weighted_pool = []
+
+        for validator in self.validators.values():
+
+            weight = int(validator.utility_score * 0.7 + validator.reputation * 3 + 1)
+
+            weighted_pool.extend([validator.address] * weight)
+
+        return random.choice(weighted_pool)
+
+    def add_block(self, data, task_type):
+
+        validator_address = self.choose_validator()
+        validator = self.validators[validator_address]
+
+        utility_score = self.calculate_utility(task_type)
+
+        if not self.verify_utility(utility_score):
+            validator.penalize()
+            return None
+
+        validator.reward(utility_score)
+
+        new_block = Block(
+            len(self.chain),
+            self.get_latest_block().hash,
+            time.time(),
+            data,
+            validator.address,
+            utility_score
+        )
+
+        self.chain.append(new_block)
+
+        return new_block
+
+    def network_stats(self):
+
+        stats = {
+            "total_blocks": len(self.chain),
+            "validators": len(self.validators)
+        }
+
+        return stats
+
+
+# Simulation
+
+if __name__ == "__main__":
+
+    blockchain = PoUBlockchain()
+
+    v1 = Validator("node_A")
+    v2 = Validator("node_B")
+    v3 = Validator("node_C")
+
+    blockchain.register_validator(v1)
+    blockchain.register_validator(v2)
+    blockchain.register_validator(v3)
+
+    tasks = [
+        ("Train AI model", "ai_training"),
+        ("Protein simulation", "scientific_compute"),
+        ("Climate dataset processing", "data_processing"),
+        ("Distributed storage", "storage"),
+        ("General compute", "general_compute")
+    ]
+
+    for task in tasks:
+        block = blockchain.add_block(task[0], task[1])
+        if block:
+            print("Block", block.index, "validated by", block.validator)
+
+    print("\nNetwork Stats:")
+    print(blockchain.network_stats())
+
+    print("\nValidator Stats:")
+    for v in blockchain.validators.values():
+        print(v.address, "utility:", v.utility_score, "reputation:", round(v.reputation, 2))
